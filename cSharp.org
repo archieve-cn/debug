@@ -1,0 +1,62 @@
+#+TITLE a archive about CSharp
+
+*** about static
+1. static <=> extern
+2. static in class : in all program only one, for static var and static fun.
+can be use in not Instantiation
+3. in function, it presidance a closure
+
+*** Functions
+- Invoke()
+:: call one in a time
+- InvokeRepeating()
+:: call one every a time
+- CancelInvoke
+:: delete all Invoke
+- Coroutine
+  1. StartCoroutine
+  2. StopCoroutine
+  3. StopAllCoroutine
+*** interface
+:: interface only include functions', delegates', and events' signature
+:: interface can't include const, static, constrct...
+:: a class can inherited only one base class ,but multi interfaces
+*** vtbl about c++
+(1) 对于基类，如果有虚函数，那么先存放虚函数表指针，然后存放自己的数据成员；如果没有虚函数，那么直接存放数据成员。 
+(2) 对于单一继承的类对象，先存放父类的数据拷贝(包括虚函数表指针)，然后是本类的数据。 
+(3) 虚函数表中，先存放父类的虚函数，再存放子类的虚函数 
+(4) 如果重载了父类的某些虚函数，那么新的虚函数将虚函数表中父类的这些虚函数覆盖。 
+(5) 对于多重继承，先存放第一个父类的数据拷贝，在存放第二个父类的数据拷贝，一次类推，最后存放自己的数据成员。其中每一个父类拷贝都包含一个虚函数表指针。如果子类重载了某个父类的某个虚函数，那么该将该父类虚函数表的函数覆盖。另外，子类自己的虚函数，存储于第一个父类的虚函数表后边部分。 
+(6) 当对象的虚函数被调用是，编译器去查询对象的虚函数表，找到该函数，然后调用。
+
+*** template
+1. for user, you only need to know such a funcAPI, not to know
+the type.the funcAPI in is the type
+2. for designer, you should to design a funcAPI that 
+type <=> API , considering the request to ask for and use for
+3. every keyword "template <>" is only effect one piece code.
+*** about c# remeber
+1. public is seen for a same namespace, exist can be access
+2. lifetime is in your use,and static can fit the lifetime
+*** Polymorphism
+:: interface || base
+::        |                   mainProgram || a class
+::        |                             |
+::        V                             V
+::     derverid-------------->state a interface or base   
+::        |                             |
+::        V                             V
+::      generate                  continue running
+*** c# static class and private constructor
+静态类与非静态类的重要区别在于静态类不能实例化，也就是说，不能使用 new 关键字创建静态类类型的变量。在声明一个类时使用static关键字，具有两个方面的意义：首先，它防止程序员写代码来实例化该静态类；其次，它防止在类的内部声明任何实例字段或方法。
+
+静态类是自C# 2.0才引入的，C# 1.0不支持静态类声明。程序员必须声明一个私有构造器。私有构造器禁止开发者在类的范围之外实例化类的实例。使用私有构造器的效果与使用静态类的效果非常相似。
+
+两者的区别：
+私有构造器方式仍然可以从类的内部对类进行实例化，而静态类禁止从任何地方实例化类，其中包括从类自身内部。静态类和使用私有构造器的另一个区别在于，在 使用私有构造器的类中，是允许有实例成员的，而C# 2.0和更高版本的编译器不允许静态类有任何实例成员。使用静态类的优点在于，编译器能够执行检查以确保不致偶然地添加实例成员，编译器将保证不会创建此 类的实例。静态类的另一个特征在于，C#编译器会自动把它标记为sealed。这个关键字将类指定为不可扩展；换言之，不能从它派生出其他类。
+
+静态类的主要特性：
+1：仅包含静态成员。
+2：无法实例化。
+3：是密封的。
+4：不能包含实例构造函数。

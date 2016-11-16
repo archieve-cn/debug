@@ -1,0 +1,16 @@
+** DONE
+date : 2016-07-06
+| failNum | file              | lineRange | comment                                          |
+|---------+-------------------+-----------+--------------------------------------------------|
+|       1 | StartScene.cs     |     50-74 | if not  skip in                                  |
+|       2 | PlantformWorks.cs |   137-138 | Sony.NP.TusTss.IsTssBusy()=>false                |
+|       3 | PlantformWorks.cs |   115-117 | return false;                                    |
+|       4 | PSNWork.cs        |       279 | OnNPInitialized                                  |
+|       5 |                   |           | sqlite table not exits:user_property             |
+|       6 |                   |           | main thread: Constructors and field initializers |
+
+assume_1: the path is wrong, it may loop in the the pathInit
+assume_2: start a thread should be in Main thread every thread info should be store in update function \
+
+** TODO
+date : 2016-07-07

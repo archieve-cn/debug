@@ -1,0 +1,137 @@
+*** Base Context
+#+BEGIN_VERSE
+- 预先了解不同的游戏系统对于游戏对象表示，距离，时间的的基础运算
+- 关于OOP: 对于函数式编程来说必要保持顺序的逻辑，从属关系要清楚。
+  对于OOP来说，每个对象都要有一个记录调用自身的使用者的属性，互相从属。
+- for c++ , the memory is different from python, when you make a API class, you
+  should use ptr(*)
+- 类的组合模式可以相互确认双方，是朋友关系
+  而类的继承模式是父子关系
+#+END_VERSE
+*** about question
+1. 关于多态的最佳实践
+*** StateMode
+eg: 德鲁伊的形态转换
+[[./StateMode.png]]
++ Context是一个德鲁伊角色，提供操作和转换的接口，其拥有一个记录状态的属性
++ State是一个多态基类，用来实现不同的状态, 其拥有所有角色的Context用来改变当前角色的状态。
++ 通常情况下判断State自动转换的功能实现在ConcreteState中，因此，对于State转换需
+new ConcreteState(Context)来实例化一个状态。
++ 不要对继承接口的类保有偏见，本质上接口类只是一套规则，其子类与其他调用该接口的类依然遵循
+通常的类之间的交互原则
++ 对于Contorller来说，update, setState, loadLevel要注重新旧场景切换步骤，避免游戏卡顿
+:: State模式是一种类的相互传递消息的体现只要双方同时拥有对方的地址，就可以互相访问对方的属性
+*** FacadeMode
+eg. GameEventSystem
+    CampSystem
+    StageSystem
+    APSystem
+    AchievementSystem
+[[./Facade.png]]
++ 涉及到的相关游戏对象有： client(玩家，客户端), subSystem(子系统), Facade(统一的对外界面)
+*** SingletonMode
+eg. 游戏的数据资料
+:: 对于单一的类型可以自身判断，产生单一的一个实例，使用static应该注意
+[[./SingletonMode.png]]
++ 为子系统中的一组接口提供一个一致的界面，Facade模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。
++ private: _instance //禁止访问，保证不会产生额外的实例
+  由于csharp本身的变量都是引用类型而非值类型，因此必须要对_instance 实例化，但是又要避免其暴露在外
++ get: Instance //减少Instance"()"
++ private singleton() //防止使用new 产生新的对象
++ 方案设定->对于一个有特定功能的类别，首先明确其是否满足唯一与容易取得的特性，只需要其中某一项特性
+  可以采用类内定义标记属性来计数
+#+BEGIN_QUOTE
+1. singleton.instance
+2. new class()  //class{public static counter == 0; class(counter++)}
+3. Class.StaticFunc()
+#+END_QUOTE
+*** MediatorMode
+eg. windows 消息队列
++ 用一个中介对象来封装一系列的对象交互。中介者使各对象不需要显式地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。
++ Meditor, Colleague. every Colleague has a ColleagueMeditor to send message.
++ For MeditorMode,需要实现一个具体的交互方法，对于每组通信系统，因此可能导致通行系统过于庞大
++ 可以使用观察者模式对其优化
+[[./MeditorMode.png]]
+*** DoubleBuffer
+*** GameLoop
+#+BEGIN_SRC CSharp
+void main()
+{
+  GameInit();
+  
+  while(!IsGameOver())
+  {
+    UserInput();
+    UpdateGameLogic();
+    Render();
+  }
+
+  GameRelease();
+}
+#+END_SRC
++ 关于游戏的更新时间计算：
++ 两帧之间的步长与实际更新时间的问题(需要仔细设计每次数据更新和渲染的空档时间问题)
++ 对于某些角色设计问题，例如某个怪物死亡之后掉落物品，若掉落更新随着Input被拾取，
+  那么下一帧玩家将不会看到物品的出现，因此有必要将更新与渲染分开考虑
++ 关于游戏对象的管理，对于一个管理游戏对象的数组和其他数据结构来说，每次数据更新所改变的数据
+  应该和渲染所做的模型对应起来，一个通俗的做法是延迟修改和异步处理。
++ 几种设计模式的组合，使用实体类，组件类，代理类进行更新和变化时可以通过关闭某些对象的更新来
+  优化游戏的速度
+
+*** ByteCode
+eg. enum Instruction
++ 使用c++提供接口，使用脚本传递命令
++ 建立一个字节码解释器基础 
+#+BEGIN_SRC cpp
+class VM
+{
+public:
+  interpret(char bytecode[], int size)
+  {
+    instruction(bytecode);
+    switch(instruction):
+    {
+      case INSTRUCTION_MACRO:
+        //some event;
+    }
+  }
+  push();
+  pop();
+ 
+private:
+  _stackSize;
+  _stack[MAX_SIZE];
+}
+#+END_SRC
++ 使用内存池，建立一个单独的命令块
+[[./InterpreterMode.png]]
+*** BridgeMode
+eg. 角色 <-> 装备
++ 将抽象部分与它的实现部分分离，使它们都可以独立地变化。
++ 桥接模式建立了双方的对桥端的API，每个对端使用抽象基类作为封装
+  当桥的双端分别需要增加不同的类别时对对端不会产生影响
+[[./BridgeMode.png]]
+*** StrategyMode
+eg. player <- 不同的伤害计算策略
++ 与StateMode区别，State之间相互交互， Strategy之间并不存在这种关系
++ 可以传递不同的人物设置策略到人物的属性类中，将人物属性，人物属性的设置策略分别封装，可以灵活的修改
+[[./StrategyMode.png]]
+*** TemplateMode
+eg. 基类中对外接口相同，但是该接口中调用的其他函数需要重载
++ 定义一个操作中的算法的骨架，而将一些步骤延迟到子类中。
+  TemplateMethod 使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤。
+[[./TemplateMode.png]]
+*** FactoryMode & BuilderMode
+eg. 工场中不同的生产线生产产品
++ 建立一个工厂泛型，在其中建立多道生产线（泛型方法），对不同的生产线传递不同的生产参数
++ 每个生产线负责组装产品，为其添加各种功能属性，而在工厂中仅仅负责参数与分配任务的问题
+[[./FactoryMode.png]]
+[[./BuilderMode.png]]
+
+*** TODO FlyweightMode
+eg. 共享一大堆小物件。类似于新闻信息，使得各个用户都可以享用
++ 
+*** CompositeMode
+eg. 使用UI工具设计一套方便的用户界面
+
+

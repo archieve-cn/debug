@@ -1,0 +1,54 @@
+#+TITLE: PS4 NOTE
+#+OPTIONS：  ^:nil
+** DONE
+date : 2016-07-06
+#+CAPTION: issue
+| failNum | file              | lineRange | comment                                          |
+|---------+-------------------+-----------+--------------------------------------------------|
+|       1 | StartScene.cs     |     50-74 | if not  skip in                                  |
+|       2 | PlantformWorks.cs |   137-138 | Sony.NP.TusTss.IsTssBusy()=>false                |
+|       3 | PlantformWorks.cs |   115-117 | return false;                                    |
+|       4 | PSNWork.cs        |       279 | OnNPInitialized                                  |
+|       5 |                   |           | sqlite table not exits:user_property             |
+|       6 |                   |           | main thread: Constructors and field initializers |
+*judgement*
+assume_1: the path is wrong, it may loop in the the pathInit
+assume_2: start a thread should be in Main thread every thread info should be store in update function \
+
+** TODO ps4trophy
+date : 2016-08-04
+**** DONE issue: NP_ERR_INDEX_OUT_OF_RANGE
+**** TODO ISSUE: pkg & hosted
+:: result
+#+BEGIN_QUOTE
+pkg     ==> wrong
+hosted  ==> right
+#+END_QUOTE
+#+CAPTION TROPYH STSTEM
+[[./trophy.png]]
+
+**** about data
+ff -> async -> CloudData Class
+
+- users
+one ps4 can keep four user login, 
+
+every one in the ps4 can set level that keep others can not play your game
+
+everyone has his own trophys pack, and ervery title has it's own trophy pack
+
+- console output
+01:49:38	submitDone is not called
+
+- trophies bug
+rsk00.trp can not be changed.
+  1. network init 
+  2. trophy get 
+  3. trophy set
+
+** TRC Error
+
+- R4031
+
+| SaveCloudDataOfDBData | CloudData.cs | 167 |
+| UpdateDBDataFromCloud | CloudData.cs | 366 |

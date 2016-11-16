@@ -1,0 +1,13 @@
+# PlayStation4(爬坑)
++ git checkout branch --ps4
++ ps4 SDK install
++ unity3D package :playStation4-Support 
+                   PS4 render/Camera/Dialog/Network/Toolkit
++ plantform Switch
++ SCE Publishing --> set Title ID
++ build --> reset DB/delete xxx/init
+
+**** about debug
+- install vstool
+- generate host version
+- load excutable

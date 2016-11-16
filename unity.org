@@ -1,0 +1,228 @@
+#+TITLE: unity note
+#+EMAIL: akclupo@gmail.com
+#+STYLE: <link style="css">
+
+*** GameObject
+*** SaveData for PS4
+The SaveData library does not provide features related to user interfaces such as dialog display. 
+Such features are provided with the SaveDataDialog library.
+- Main features
+#+BEGIN_QUOTE
+  Creating save data
+  Mounting existing save data (obtaining directory paths)
+  Deleting save data
+  Searching for save data (obtaining lists)
+  Obtaining used space/free space
+  Setting/obtaining save data titles, detailed information, etc.
+  Setting/obtaining save data icons
+  Backing up/restoring save data
+#+END_QUOTE
+- SaveData 
+#+BEGIN_QUOTE
+  (1) Initialize the library
+  (2) Mount save data
+  (3) Write/read files
+  (4) Unmount save data
+  (5) Terminate the library
+#+END_QUOTE
+** DONE singleto
+** DONE message & event   
+*** TODO ASSET_BUDDLE
+:: prefab bin scene
+*** about Project dirctory
+- Assets/
+  对应 Application.dataPath
+
+  放置在这个目录下的文件将显示在 Unity Editor 的 Project View 下面
+  隐藏文件及 meta 文件除外）。  
+
+- Assect/**/Editor/
+  放在这（些）个目录下的脚本，只有在 Unity Editor 下会被启用，而不会被
+  译到最终的游戏中。但有些例外（见 Assets/Plugins）。
+
+- Assets/Plugins/
+  该目录放置一些跨平台的第三方 SDK 的项目资源，如 ulua，微信 SDK、友盟
+  DK 等，通常是一些静态库。在打包项目的时候，会根据不同平台将该目录下的
+  源一起复制到应用的 Libraries 目录下。
+
+- Assets/Plugins/Editor/
+  *特别需要注意的是在Assets/Plugins中的 Editor 目录,Assets/Plugins/Editor不
+  会被编译到游戏中以外，其它的Asets/Plugins/**/Editor 不会被过滤.*
+
+  Assets/Plugins 并不适合放 Unity 脚本，不要把它当作第三方脚本的目录，因为这些第三方脚
+本常常会带有 Editor 子目录，这会导致编译的时候由于引用了 UnityEditor 命名空间而报错。
+如果一些第三方 SDK 带有 Editor 脚本，正确的位置应该是放在 Assets/Plugins/Editor 下。
+
+ Unity3d 5.X 之后，动态链接库形式的插件可以放在任意文件夹，并通过 Inspector 来指定平台。
+
+- Assets/StreamingAssets/
+  对应 Application.streamingAssetsPath
+  放在该目录下的所有文件，在打包的时候会被复制到游戏应用的特定目录下。如果要处理跨平台游戏，
+这里应该保持干净，只放一些共有文件。其它的文件可以通过 PostProcessBuild 编写代码根据不同
+  平台复制文件到上述目录。
+
+- */Resources/
+  放在这（些）个目录下的文件即使没有在场景中引用，也会被归档到 resources.assets 以及 
+sharedassets*.assets 里面。
+
+这也是最常被误用的文件夹名称，然而值得庆幸的是并不是所有文件都会被归档，只有 Unity3d 
+常用的格式——像是声音、贴图、材质等，如果是其它文件需要满足这些扩展名才能被归档，如二进制
+文件可以命名为 *.bytes，以上这些格式将以 TextAsset 类型加载。
+
+多个 Resources 文件夹可以并存于项目中，其中的资源通过 Resources.Load(path) 加载，
+（path 是相对于 Resources 的路径，不带扩展名），在 Unity Editor 中测试时，
+Unity 将在所有 Resources 文件夹检索这个资源，打包后则是在 *.assets 文件里检索。
+
+- Temp/
+对应 Application.temporaryCachePath
+
+比较少被注意到的文件夹，用于存放一些临时文件。在 Editor 脚本需要产生临时文件或中间
+文件的时候，可以放在这里。
+
+另外可以使用 FileUtil.GetUniqueTempPathInProject() 获得一个可写的临时文件路径，
+也是放在这个目录下。
+
+- Application.persistentDataPath
+这个目录指向游戏应用的可读写目录，通常游戏的存档或者热更包都在这里。并且里面的文件
+不会随着 APP 升级而丢失，除非是手动卸载游戏。
+
+*** about unity data save
+- PlayerPrefs: save as plist, in registion, android:data
+- file: TextAsset txt = Resources.Load("file_name") as TextAsset;
+        ''' the file is in dir : Resources/
+  hints:
+    文本资源在编译时想其他资产一样被序列化。当你发布你的游戏时没有物理文本文件被包括其中。
+    文本资源并不是要用于在运行时生成的文本文件。
+- json: Json-LitJson.dll
+#+BEGIN_SRC c#
+TextAsset mySource = Resource.Load("json_name") as TextAsset;
+JsonData jsonData = JsonMapper.ToObject(mySource.text);
+#+END_SRC
+- sqlite :
+  
+      
+*** Database(Sqlite) Setup for unity
+1. sqlite3.def & sqlite3.dll => Assets/Plugins
+   http://www.sqlite.org/download.html (Precompiled Binaries for Windows)
+2. create database in Assets folder in Project
+3. System.Data.dll & Mono.Data.Sqlite.dll => Assets/Plugins
+   unity\Editor\Data\Mono\lib\mono\2.0*
+4. using Mono.Data.Sqlite;
+   using System.Data;
+   using System;
+5. string conn = "URI=file: "+Application.dataPath + "/database_name"
+
+** TODO Monobehaviour
+*** DONE get & set
+#+BEGIN_SRC Csharp
+private string name;
+public string Name{
+  get { return name;  }
+}
+#+END_SRC
+*** 关于mono垃圾收集机制
+**** instruction
+#+BEGIN_QUOTE
+值类型在堆中，引用类型分配在栈上。堆具有固定大小，在一个新的线程开始时被设定。
+NET线程在Windows默认为一个1MB的堆栈大小。这段内存是用来加载线程的主函数和局\
+部变量，并且随后加载和卸载被主函数调用的函数（与他们的本地变量）。
+
+一些内存可能会被映射到CPU的缓存，以加快速度。只要调用深度不过高或局部变量不过\
+大，你不必担心堆栈溢出。这种栈的用法很好地契合结构化编程的概念(structured programming)
+
+如果对象太大不适合放在栈上，或者如果他们要比创造了他们的函数活得长，堆这个时候\
+就该出场了。堆是“其他的一切“- 是一段可以随着每个OS请求增长的内存，
+and over which the program rules as it wishes（这句不会……）。
+不过，虽然栈几乎是不能管理（只使用一个指针记住free section开始的地方），
+堆碎片很快会从分配对象的顺序到你释放的顺序打乱。
+把堆想成瑞士奶酪，你必须记住所有的孔！根本没有乐趣可言。进入自动内存管理。
+自动分配的任务 - 主要是为你跟踪奶酪上所有的孔 - 是容易的，而且几乎被所有的现代编程语言支持
+。更难的是自动释放，尤其是决定释放的时机，这样你就不必去管了。
+
+后者任务被称为垃圾收集(GC)。不是你告诉你的运行时环境什么时候可以释放对象的内存,
+是运行时跟踪所有的对象引用,从而能够确定——在特定的时间间隔里,一个对象不可能被你的代
+码引用到了。这样一个对象就可以被销毁,它的内存会被释放。GC仍被学者积极地研究着,
+这也解释了为什么GC的架构自.net框架1.0版以来改变如此之多。
+然而，Unity不使用.net而是其开源的表亲,Mono,而它一直落后于它的商业化对手（.net）。
+此外,Unity不默认使用Mono的最新版本(2.11/3.0),而是使用版本2.6(准确地说，2.6.5，
+在我的Windows4.2.2安装版上(编辑:这同样适用于Unity4.3])。
+如果你不确定如何自己验证这一点,我将在接下来的帖子里讨论。
+
+在Mono2.6版本之后引入了有关GC的重大修改。新版本使用分代垃圾收集（generational GC），
+而2.6仍采用不太复杂的贝姆垃圾收集器（Boehm garbage collector）。
+现代分代GC执行得非常好，甚至可以在实时应用中使用（在一定限度内），如游戏。
+另一方面，勃姆式GC的工作原理是在堆上做穷举搜索垃圾。以一种相对“罕见”的时间间隔
+（即，通常的频率大大低于一次每帧）。因此，它极有可能以一定的时间间隔造成帧率下降，
+因而干扰玩家。Unity的文档建议您调用System.GC.Collect（），
+只要您的游戏进入帧率不那么重要的阶段（例如，加载一个新的场景，或显示菜单）。
+然而，对于许多类型的游戏，出现这样的机会也极少，这意味着，
+在GC可能会在你不想要它的时候闯进来。如果是这样的话，你唯一的选择是自己硬着头皮管理内存。
+而这正是在这个帖子的其余部分，也是以下两个帖子的内容！
+#+END_QUOTE
+**** managed 
+- programming code
+程序代码包括了所有的Unity引擎，使用的库，以及你所写的所有的游戏代码。
+在编译后，得到的运行文件将会被加载到设备中执行，并占用一定内存。
+这部分内存实际上是没有办法去“管理”的，它们将在内存中从一开始到最后一直存在。
+一个空的Unity默认场景，什么代码都不放，在iOS设备上占用内存应该在17MB左右，
+而加上一些自己的代码很容易就飙到20MB左右。想要减少这部分内存的使用，能做的就是减少使用的库。
+- managed heap
+托管堆是被Mono使用的一部分内存。Mono项目一个开源的.net框架的一种实现，
+对于Unity开发，其实充当了基本类库的角色。
+托管堆用来存放类的实例（比如用new生成的列表，实例中的各种声明的变量等）。
+“托管”的意思是Mono“应该”自动地改变堆的大小来适应你所需要的内存，
+并且定时地使用垃圾回收（Garbage Collect）来释放已经不需要的内存。
+关键在于，有时候你会忘记清除对已经不需要再使用的内存的引用，
+从而导致Mono认为这块内存一直有用，而无法回收。
+#+BEGIN_QUOTE
+Unity有一篇不错的关于托管堆代码如何写比较好的说明，在此基础上我个人有一些补充。
+
+首先需要明确，托管堆中存储的是你在你的代码中申请的内存（不论是用js，C#还是Boo写的）。一般来说，无非是new或者Instantiate两种生成object的方法（事实上Instantiate中也是调用了new）。在接收到alloc请求后，托管堆在其上为要新生成的对象实例以及其实例变量分配内存，如果可用空间不足，则向系统申请更多空间。
+
+当你使用完一个实例对象之后，通常来说在脚本中就不会再有对该对象的引用了（这包括将变量设置为null或其他引用，超出了变量的作用域，或者对Unity对象发送Destory()）。在每隔一段时间，Mono的垃圾回收机制将检测内存，将没有再被引用的内存释放回收。总的来说，你要做的就是在尽可能早的时间将不需要的引用去除掉，这样回收机制才能正确地把不需要的内存清理出来。但是需要注意在内存清理时有可能造成游戏的短时间卡顿，这将会很影响游戏体验，因此如果有大量的内存回收工作要进行的话，需要尽量选择合适的时间。
+
+如果在你的游戏里，有特别多的类似实例，并需要对它们经常发送Destroy()的话，游戏性能上会相当难看。比如小熊推金币中的金币实例，按理说每枚金币落下台子后都需要对其Destory()，然后新的金币进入台子时又需要Instantiate，这对性能是极大的浪费。一种通常的做法是在不需要时，不摧毁这个GameObject，而只是隐藏它，并将其放入一个重用数组中。之后需要时，再从重用数组中找到可用的实例并显示。这将极大地改善游戏的性能，相应的代价是消耗部分内存，一般来说这是可以接受的。关于对象重用，可以参考Unity关于内存方面的文档中Reusable Object Pools部分，或者Prime31有一个是用Linq来建立重用池的视频教程（Youtube，需要翻墙，上半部分，下半部分）。
+
+如果不是必要，应该在游戏进行的过程中尽量减少对GameObject的Instantiate()和Destroy()调用，因为对计算资源会有很大消耗。在便携设备上短时间大量生成和摧毁物体的话，很容易造成瞬时卡顿。如果内存没有问题的话，尽量选择先将他们收集起来，然后在合适的时候（比如按暂停键或者是关卡切换），将它们批量地销毁并且回收内存。Mono的内存回收会在后台自动进行，系统会选择合适的时间进行垃圾回收。在合适的时候，也可以手动地调用System.GC.Collect()来建议系统进行一次垃圾回收。要注意的是这里的调用真的仅仅只是建议，可能系统会在一段时间后在进行回收，也可能完全不理会这条请求，不过在大部分时间里，这个调用还是靠谱的。
+#+END_QUOTE
+- native heap
+本机堆是Unity引擎进行申请和操作的地方，比如贴图，音效，关卡数据等。
+Unity使用了自己的一套内存管理机制来使这块内存具有和托管堆类似的功能。
+基本理念是，如果在这个关卡里需要某个资源，那么在需要时就加载，之后在没有任何引用时进行卸载。
+听起来很美好也和托管堆一样，但是由于Unity有一套自动加载和卸载资源的机制，
+让两者变得差别很大。自动加载资源可以为开发者省不少事儿，
+但是同时也意味着开发者失去了手动管理所有加载资源的权力，
+这非常容易导致大量的内存占用（贴图什么的你懂的），也是Unity给人留下“吃内存”印象的罪魁祸首。
+#+BEGIN_QUOTE
+当你加载完成一个Unity的scene的时候，scene中的所有用到的asset（包括Hierarchy中所有GameObject上以及脚本中赋值了的的材质，贴图，动画，声音等素材），都会被自动加载（这正是Unity的智能之处）。也就是说，当关卡呈现在用户面前的时候，所有Unity编辑器能认识的本关卡的资源都已经被预先加入内存了，这样在本关卡中，用户将有良好的体验，不论是更换贴图，声音，还是播放动画时，都不会有额外的加载，这样的代价是内存占用将变多。Unity最初的设计目的还是面向台式机，几乎无限的内存和虚拟内存使得这样的占用似乎不是问题，但是这样的内存策略在之后移动平台的兴起和大量移动设备游戏的制作中出现了弊端，因为移动设备能使用的资源始终非常有限。因此在面向移动设备游戏的制作时，尽量减少在Hierarchy对资源的直接引用，而是使用Resource.Load的方法，在需要的时候从硬盘中读取资源，在使用后用Resource.UnloadAsset()和Resources.UnloadUnusedAssets()尽快将其卸载掉。总之，这里是一个处理时间和占用内存空间的trade off，如何达到最好的效果没有标准答案，需要自己权衡。
+
+在关卡结束的时候，这个关卡中所使用的所有资源将会被卸载掉（除非被标记了DontDestroyOnLoad）的资源。注意不仅是DontDestroyOnLoad的资源本身，其相关的所有资源在关卡切换时都不会被卸载。DontDestroyOnLoad一般被用来在关卡之间保存一些玩家的状态，比如分数，级别等偏向文本的信息。如果DontDestroyOnLoad了一个包含很多资源（比如大量贴图或者声音等大内存占用的东西）的话，这部分资源在场景切换时无法卸载，将一直占用内存，这种情况应该尽量避免。
+
+另外一种需要注意的情况是脚本中对资源的引用。大部分脚本将在场景转换时随之失效并被回收，但是，在场景之间被保持的脚本不在此列（通常情况是被附着在DontDestroyOnLoad的GameObject上了）。而这些脚本很可能含有对其他物体的Component或者资源的引用，这样相关的资源就都得不到释放，这绝对是不想要的情况。另外，static的单例（singleton）在场景切换时也不会被摧毁，同样地，如果这种单例含有大量的对资源的引用，也会成为大问题。因此，尽量减少代码的耦合和对其他脚本的依赖是十分有必要的。如果确实无法避免这种情况，那应当手动地对这些不再使用的引用对象调用Destroy()或者将其设置为null。这样在垃圾回收的时候，这些内存将被认为已经无用而被回收。
+
+需要注意的是，Unity在一个场景开始时，根据场景构成和引用关系所自动读取的资源，只有在读取一个新的场景或者reset当前场景时，才会得到清理。因此这部分内存占用是不可避免的。在小内存环境中，这部分初始内存的占用十分重要，因为它决定了你的关卡是否能够被正常加载。因此在计算资源充足或是关卡开始之后还有机会进行加载时，尽量减少Hierarchy中的引用，变为手动用Resource.Load，将大大减少内存占用。在Resource.UnloadAsset()和Resources.UnloadUnusedAssets()时，只有那些真正没有任何引用指向的资源会被回收，因此请确保在资源不再使用时，将所有对该资源的引用设置为null或者Destroy。同样需要注意，这两个Unload方法仅仅对Resource.Load拿到的资源有效，而不能回收任何场景开始时自动加载的资源。与此类似的还有AssetBundle的Load和Unload方法，灵活使用这些手动自愿加载和卸载的方法，是优化Unity内存占用的不二法则
+#+END_QUOTE
+*** StartCoroutine(Ienumerator[一个迭代器调用条件])
+*** Start()||Awake()||Update||OnGUI()
+*** about Trigger
+- *Unity引擎触发器系统有三个属性：Box Collider、Is Trigger、Rigibody*
+Box Collider：Unity3D的GameObject提供的基本模型才具有这个属性，表示该物体是否会和别的物体发生碰撞。
+
+Is Trigger：BoxCollider的子选项，表示该物件是否为一个触发器。
+
+Rigibody：选中物件，才能在菜单“Component”里，给物件添加Rigibody组件。
+- *两Collider相碰，至少要有一个物体具有Rigibody刚体才会触发Trigger函数。*
+*** about Shader&Material
+Shader（着色器）实际上就是一小段程序，
+它负责将输入的Mesh（网格）以指定的方式和输入的贴图或者颜色等组合作用，然后输出。
+绘图单元可以依据这个输出来将图像绘制到屏幕上。
+输入的贴图或者颜色等，加上对应的Shader，以及对Shader的特定的参数设置，
+将这些内容（Shader及输入参数）打包存储在一起，得到的就是一个Material（材质）。
+之后，我们便可以将材质赋予合适的renderer（渲染器）来进行渲染（输出）了。
+，它只是一段规定好输入（颜色，贴图等）和输出（渲染器能够读懂的点和颜色的对应关系）的程序。
+而Shader开发者要做的就是根据输入，进行计算变换，产生输出而已。//一个函数
+:: 着色器分为两大类
+- 表面着色器（Surface Shader）
+  为你做了大部分的工作，只需要简单的技巧即可实现很多不错的效果。类比卡片机，上手以后不太需要很多努力就能拍出不错的效果。
+- 片段着色器（Fragment Shader）
+  可以做的事情更多，但是也比较难写。使用片段着色器的主要目的是可以在比较低的层级上进行更复杂（或者针对目标设备更高效）的开发。
